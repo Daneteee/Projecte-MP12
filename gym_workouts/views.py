@@ -93,20 +93,28 @@ def enroll_user(request):
 
             # Verifiquem que l'usuari tingui subscripció
             if not request.user.subscription:
-                messages.error(request, "Has de tenir una subscripció para inscribirte en rutinas.")
+                messages.error(request, "Has de tenir una subscripció per inscriure't a rutines.")
                 return redirect('gym_workouts:workouts')
+
+            # Obtenim el màxim de rutines segons la subscripció de l'usuari
+            max_routines = request.user.subscription.max_routines if request.user.subscription else 0
+
+            # Si la subscripció és il·limitada
+            if request.user.subscription and request.user.subscription.name == 'unlimited':
+                max_routines = float('inf')  # Il·limitat
 
             # Comprovem que l'usuari es pot inscriure
             if schedule.count_enrolled() < 10 and request.user.enrolled_schedules.count() < max_routines:
                 schedule.enrollments.add(request.user)
                 messages.success(request, "T'has inscrit a la rutina correctament!")
             else:
-                messages.error(request, 'No et pots inscriure, has arribat al límit del teu pla.')
+                messages.error(request, 'Ja no et pots inscriure!.')
         else:
             print(form.errors)  
             messages.error(request, 'Hi ha hagut un error inesperat.')
 
     return redirect('gym_workouts:workouts')
+
 
     
 # Vista per sortir d'una rutina
@@ -121,4 +129,4 @@ def leave_routine(request):
         else:
             messages.warning(request, "No estàs inscrit a aquesta rutina.")
 
-    return redirect('gym_trainer:assign_schedule')
+    return redirect('gym_workouts:workouts')

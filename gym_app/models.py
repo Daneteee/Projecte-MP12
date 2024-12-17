@@ -11,7 +11,7 @@ class User(AbstractUser ):
     ]
     email = models.EmailField(unique=True)
     role = models.CharField(max_length=10, choices=ROLE_CHOICES, default='user')
-    subscription = models.CharField(max_length=100, null=True, blank=True)  # O ajusta según sea necesario
+    subscription = models.ForeignKey(Subscription, on_delete=models.SET_NULL, null=True, blank=True)
 
     class Meta:
         db_table = 'users'

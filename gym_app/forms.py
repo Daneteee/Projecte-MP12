@@ -20,7 +20,15 @@ class UserRegistrationForm(UserCreationForm):
             raise ValidationError("Aquest correu ja está registrat.")
         return email
 
-
+    def clean_username(self):
+        username = self.cleaned_data.get('username')
+        try:
+            if User.objects.filter(username=username).exists():
+                raise ValidationError("Aquest nom d'usuari ja està agafat.")
+        except Exception as e:
+            raise ValidationError("Aquest nom d'usuari ja està agafat.")
+        return username
+        
 class UserLoginForm(forms.Form):
     email = forms.EmailField()
     password = forms.CharField(widget=forms.PasswordInput)
