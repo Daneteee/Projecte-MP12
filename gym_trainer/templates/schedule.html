@@ -1,0 +1,127 @@
+{% extends 'base.html' %}
+{% if messages %}
+    <ul class="messages">
+        {% for message in messages %}
+            <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+        {% endfor %}
+    </ul>
+{% endif %}
+{% load custom_filters %}
+{% block content %}
+<div class="container mt-5">
+    <h2>Horari de Rutines</h2>
+
+    <form method="POST">
+        {% csrf_token %}
+        <div class="table-responsive">
+
+            <!-- La taula amb les rutines que hi ha  -->
+            <table class="table table-bordered text-center">
+                <thead>
+                    <tr>
+                        <!-- Capçalera amb "Hora" i els dies-->
+                        <th>Hora</th>
+                        {% for day in days_of_week %}
+                            <th>{{ day }}</th>
+                        {% endfor %}
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for hour in hours %}
+                        <tr>
+                            <td>{{ hour }}:00</td>
+                            {% for day in days_of_week %}
+                                <td>
+                                    <!-- Amb el with key creem una clau per filtrar les dades de schedule_data -->
+                                    {% with key=day|add:"_"|add:hour %}
+                                        {% if schedule_data|get_item:key %}
+                                            {% with routine_id=schedule_data|get_item:key %}
+                                                <div class="d-flex justify-content-center align-items-center">
+                                                    {% for routine in routines %}
+                                                        {% if routine.id == routine_id %}
+                                                            <div class="d-flex justify-content-center align-items-center" style="height: 100%;">
+                                                                <div class="d-flex align-items-center" style="background-color: #7B1FA2; border-radius: 10px; padding: 5px 10px;">
+
+                                                                    <!-- El nom de la rutina es un botó on si es clica es pot editar la rutina -->
+                                                                    <a href="{% url 'gym_trainer:edit_routine' routine.id %}" class="btn btn-link text-white p-0 me-2" style="text-decoration: none;">
+                                                                        {{ routine.name }}
+                                                                    </a>
+
+                                                                    <!-- Botó per eliminar la rutina-->
+                                                                    <button type="button" 
+                                                                            class="btn btn-link p-0" 
+                                                                            onclick="confirmDelete('{{ routine.id }}', '{{ routine.name }}', '{{ day }}', '{{ hour }}')"
+                                                                            style="color: red;">
+                                                                        <i class="fas fa-times"></i>
+                                                                    </button>
+                                                                </div>
+                                                            </div>
+                                                        {% endif %}
+                                                    {% endfor %}
+                                                </div>
+                                            {% endwith %}
+                                        {% else %}
+                                            <select class="form-select" name="{{ key }}">
+                                                <option value="" disabled selected>Seleccionar rutina</option>
+                                                {% for routine in routines %}
+                                                    <option value="{{ routine.id }}">{{ routine.name }}</option>
+                                                {% endfor %}
+                                            </select>
+                                        {% endif %}
+                                    {% endwith %}
+                                </td>
+                            {% endfor %}
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <button type="submit" class="btn btn-primary mt-3" style="background-color: #9010BF; border: 3px solid #7B1FA2;">Guardar</button>
+    </form>
+
+    <!-- Modal per confirmar que es vol eliminar la rutina-->
+    <div class="modal fade" id="confirmDeleteModal" tabindex="-1" aria-labelledby="confirmDeleteLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="confirmDeleteLabel">Confirmar Eliminación</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                </div>
+                <div class="modal-body">
+                    ¿Estás seguro de que quieres eliminar la rutina <strong id="routineName"></strong> del horario?
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <form method="POST" id="deleteForm" action="{% url 'gym_trainer:delete_schedule' %}">
+                        {% csrf_token %}
+                        <input type="hidden" name="day" id="dayInput">
+                        <input type="hidden" name="time" id="timeInput">
+                        <button type="submit" class="btn btn-danger">Eliminar</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Función para el modal de eliminación
+    function confirmDelete(routineId, routineName, day, time) {
+        const deleteForm = document.getElementById('deleteForm');
+
+        if (deleteForm) {
+            document.getElementById('routineName').textContent = routineName;
+
+            deleteForm.action = "{% url 'gym_trainer:delete_schedule' %}";
+
+            document.getElementById('dayInput').value = day;
+            document.getElementById('timeInput').value = time;
+
+            const modal = new bootstrap.Modal(document.getElementById('confirmDeleteModal'));
+            modal.show();
+        } else {
+            console.error("No se pudo eliminar");
+        }
+    }
+</script>
+{% endblock %}

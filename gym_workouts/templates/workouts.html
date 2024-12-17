@@ -1,0 +1,78 @@
+{% extends 'base.html' %}
+{% if messages %}
+    <ul class="messages">
+        {% for message in messages %}
+            <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+        {% endfor %}
+    </ul>
+{% endif %}
+{% load custom_filters %}
+{% block content %}
+<div class="container mt-5">
+    <h2>Horari de Rutines</h2>
+
+    <div class="table-responsive">
+        <table class="table table-bordered text-center">
+            <thead>
+                <tr>
+                    <!-- A la capçalera mostrem "Hora" i els dies amb la data format dd/mm i "Avui" en cas que sigui avui-->
+                    <th>Hora</th>
+                    {% for day, date in days_with_dates %}
+                        <th>
+                            {% if date == today %}
+                                (Avui) {{ day }} {{ date }}
+                            {% else %}
+                                {{ day }} {{ date }}
+                            {% endif %}
+                        </th>
+                    {% endfor %}
+                </tr>
+            </thead>
+            <tbody>
+
+                <!-- Mostrem el calendari de la setmana amb les rutines -->
+                {% for hour in hours %}
+                    <tr>
+                        <td>{{ hour }}:00</td>
+                        {% for day, date in days_with_dates %}
+                            <td>
+                                {% with key=day|add:"_"|add:hour %}
+                                    {% if schedule_data|get_item:key %}
+                                        {% with schedule=schedule_data|get_item:key %}
+                                            <div class="d-flex flex-column align-items-center">
+                                                <strong>{{ schedule.schedule.routine.name }}</strong>
+                                                <!-- Mostrem les persones apuntades -->
+                                                <p>
+                                                    {{ schedule.schedule.enrollments.count }} / 10 persones apuntades
+                                                </p>
+
+                                                <!-- Depenent de si l'usuari está inscrit o no mostrem Reservar o Cancelar reserva-->
+                                                {% if not schedule.is_enrolled %}
+                                                    <form method="POST" action="{% url 'gym_workouts:enroll_user' %}">
+                                                        {% csrf_token %}
+                                                        <input type="hidden" name="id" value="{{ schedule.schedule.id }}">
+                                                        <button type="submit" class="btn btn-success btn-sm">Reservar</button>
+                                                    </form>
+                                                {% else %}
+                                                    <form method="POST" action="{% url 'gym_workouts:leave_routine' %}">
+                                                        {% csrf_token %}
+                                                        <input type="hidden" name="schedule_id" value="{{ schedule.schedule.id }}">
+                                                        <button type="submit" class="btn btn-danger btn-sm">Cancelar</button>
+                                                    </form>
+                                                {% endif %}
+                                            </div>
+                                        {% endwith %}
+                                    {% else %}
+                                        <!-- Si no hi han rutines assignades ho mostrem-->
+                                        <p class="text-muted" style="font-style: italic;">No hi han rutines assignades</p>
+                                    {% endif %}
+                                {% endwith %}
+                            </td>
+                        {% endfor %}
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

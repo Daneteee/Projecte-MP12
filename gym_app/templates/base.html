@@ -7,6 +7,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}GymApp{% endblock %}</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link href="{% static 'dist/bundle.css' %}" rel="stylesheet">
     <link href="{% static 'dist/style.css' %}" rel="stylesheet">
     <style>
@@ -41,6 +42,11 @@
             transition: opacity 0.5s ease;
         }
 
+        .dropdown-menu .dropdown-item:focus {
+            background-color: #9010BF; /* Color de fondo al hacer clic */
+            color: #ffffff; /* Color del texto al hacer clic */
+        }
+
         .bg-purple {
             background-color: #7b1fa2;
             color: white;
@@ -63,7 +69,7 @@
         }
 
         .card-header {
-            background-color: #9c27b0;
+            background-color: #7B1FA2;
             color: white;
             border-top-left-radius: 8px;
             border-top-right-radius: 8px;
@@ -77,7 +83,7 @@
 
 <body>
     <!-- Navbar -->
-    <nav class="navbar navbar-expand-lg navbar-dark bg-purple">
+    <nav class="navbar navbar-expand-lg navbar-dark bg-purple shadow">
         <div class="container">
             <a class="navbar-brand" href="{% url 'home' %}">GymApp</a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
@@ -87,11 +93,26 @@
                 <ul class="navbar-nav ms-auto">
                     {% if user.is_authenticated %}
                     <li class="nav-item"><a class="nav-link" href="{% url 'home' %}">Inici</a></li>
-                    <li class="nav-item"><a class="nav-link" href="{% url 'profile_edit' %}">Editar perfil</a></li>
-                    <li class="nav-item"><a class="nav-link" href="{% url 'logout' %}">Cerrar sesión</a></li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            {{ user.username }}
+                        </a>
+                        <ul class="dropdown-menu" aria-labelledby="trainerDropdown">
+                                {% if user.role == 'trainer' %}
+                                    <li><a class="dropdown-item" href="{% url 'gym_trainer:create_routine' %}">Crear Rutina</a></li>
+
+                                {% elif user.role == 'user' %}
+                                    <li><a class="dropdown-item" href="{% url 'gym_workouts:select_subscription' %}">Seleccionar Cuota</a></li>
+                                
+                                {% endif %}
+                                <li><a class="dropdown-item" href="{% url 'profile_edit' %}">Editar Perfil</a></li>
+                            </ul>
+                        </li>
+                        <li class="nav-item"><a class="nav-link" href="{% url 'logout' %}">Tancar sessió</a></li>
+
                     {% else %}
-                    <li class="nav-item"><a class="nav-link" href="{% url 'login' %}">Iniciar sesión</a></li>
-                    <li class="nav-item"><a class="nav-link" href="{% url 'register' %}">Registro</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{% url 'login' %}">Iniciar sessió</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{% url 'register' %}">Registre</a></li>
                     {% endif %}
                 </ul>
             </div>
@@ -116,7 +137,6 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="{% static 'dist/bundle.js' %}"></script>
 </body>
 
 </html>

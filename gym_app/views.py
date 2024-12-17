@@ -1,21 +1,43 @@
-from django.shortcuts import render, redirect
+from django.contrib.auth.decorators import login_required, user_passes_test
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import login, authenticate, logout
-from django.contrib.auth.decorators import login_required
+from gym_trainer.models import Schedule, Routine
 from django.contrib import messages
-from .forms import UserRegistrationForm, UserLoginForm, UserUpdateForm
+from .forms import *
 
+# Depenent del rol de l'usuari redirigim a una pàgina o un altre
+@login_required
+def home(request):
+    context = {}
+    if request.user.role == 'trainer':
+        return redirect('gym_trainer:assign_schedule') 
+    
+    elif request.user.role == 'user':
+        return redirect('gym_workouts:workouts')
+
+    return render(request, 'home.html', context)
+
+
+# Vista per registrar l'usuari
 def register(request):
     if request.method == 'POST':
         form = UserRegistrationForm(request.POST)
         if form.is_valid():
-            user = form.save()
-            login(request, user)
-            messages.success(request, 'Registre completat amb èxit!')
-            return redirect('home')
+            try:
+                form.save()
+                messages.success(request, "Registre exitós. Ja pots iniciar sessió.")
+                return redirect('login')
+            except Exception as e:
+                print(f"Hi ha hagut un error: {str(e)}")
+        else:
+            messages.error(request, "Hi han errors al formulari.")
     else:
         form = UserRegistrationForm()
+    
     return render(request, 'register.html', {'form': form})
 
+
+# Vista per loguejar un usuari
 def user_login(request):
     if request.method == 'POST':
         form = UserLoginForm(request.POST)
@@ -34,13 +56,15 @@ def user_login(request):
         form = UserLoginForm()
     return render(request, 'login.html', {'form': form})
 
-def home(request):
-    return render(request, 'home.html')
 
+# Logout
+@login_required
 def logout_view(request):
     logout(request)
     return redirect('home')
 
+
+# Vista per editar el perfil
 @login_required
 def profile_edit(request):
     if request.method == 'POST':
@@ -53,3 +77,5 @@ def profile_edit(request):
         form = UserUpdateForm(instance=request.user)
         
     return render(request, 'profile_edit.html', {'form': form, 'active_tab': "profile"})
+
+

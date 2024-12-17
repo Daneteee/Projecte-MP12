@@ -1,0 +1,46 @@
+{% extends 'base.html' %}
+
+{% block title %}
+Crear Rutina - GymApp
+{% endblock %}
+
+{% block content %}
+<style>
+    {% comment %} Fem que no es pugui editar el tamany de l'area de text {% endcomment %}
+    textarea {
+        resize: none; 
+        width: 100%;
+        height: 150px;  
+    }
+
+    input[type="text"] {
+        resize: none; 
+    }
+</style>
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+            <div class="card shadow">
+                <div class="card-header">
+                    <i class="fas fa-sign-in-alt"></i> Crea una Rutina
+                </div>
+                <div class="card-body">
+                    <!-- Formulari per crear una rutina -->
+                    <form method="post">
+                        {% csrf_token %}
+                        {% for field in form %}
+                        <div class="mb-3">
+                            <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
+                            {{ field }}
+                            <div class="text-danger">{{ field.errors }}</div>
+                        </div>
+                        {% endfor %}
+                        <button type="submit" class="btn" style="background-color: #7B1FA2; color: white; border: none;">Crear Rutina</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

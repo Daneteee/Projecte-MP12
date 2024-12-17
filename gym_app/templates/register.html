@@ -1,12 +1,13 @@
 {% extends 'base.html' %} {% block title %}Registre - GymApp{% endblock %} {% block content %}
 <div class="container mt-5">
     <div class="row justify-content-center">
-        <div class="col-md-6">
+        <div class="col-md-8 col-lg-6">
             <div class="card shadow">
-                <div class="card-header bg-success text-white text-center">
-                    <h2>Registre</h2>
+                <div class="card-header">
+                    <i class="fas fa-sign-in-alt"></i> Registre
                 </div>
                 <div class="card-body">
+                    <!-- Formulari per registrar un nou usuari-->
                     <form method="post">
                         {% csrf_token %} {% for field in form %}
                         <div class="mb-3">
@@ -14,9 +15,11 @@
                             <div class="text-danger">{{ field.errors }}</div>
                         </div>
                         {% endfor %}
-                        <button type="submit" class="btn btn-success w-100">Registrar-se</button>
+                        <button type="submit" class="btn btn-success w-100" style="background-color: #7B1FA2; border: none;">Registrar-se</button>
                     </form>
-                    <p class="text-center mt-3">Ja tens compte? <a href="{% url 'login' %}">Inicia sessió</a></p>
+                    <div class="text-center mt-3">
+                        <p>Ja tens compte? <a href="{% url 'login' %}">Inicia sessió</a></p>
+                    </div>
                 </div>
             </div>
         </div>
