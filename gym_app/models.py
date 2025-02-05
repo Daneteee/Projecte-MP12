@@ -7,7 +7,7 @@ class User(AbstractUser ):
         ('admin', 'Administrador'),
         ('user', 'Usuari del Gimnàs'),
         ('trainer', 'Entrenador'),
-        ('director', 'Director')
+        ('gerent', 'Gerent')
     ]
     email = models.EmailField(unique=True)
     role = models.CharField(max_length=10, choices=ROLE_CHOICES, default='user')

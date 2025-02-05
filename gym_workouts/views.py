@@ -18,13 +18,22 @@ def workouts(request):
     # Data d'avui
     today = timezone.now().date()
     
-    # Calculem el primer dia de la setmana i els següents
-    start_of_week = today - timedelta(days=today.weekday())
-    week_dates = [(start_of_week + timedelta(days=i)).strftime("%d/%m") for i in range(5)]
-    
+    # Obtenim el dia de la setmana (0 = Dilluns, ..., 6 = Diumenge)
+    current_weekday = today.weekday()
+
+    # Definim els noms dels dies
     days_of_week = ['Dilluns', 'Dimarts', 'Dimecres', 'Dijous', 'Divendres']
 
-    # Combinem els dias de la setmana amb els dies numerics
+    week_dates = []
+    for i, day_name in enumerate(days_of_week):
+        if i < 2:  # Dilluns i Dimarts han de ser de la setmana següent
+            next_week_day = today + timedelta(days=(7 - current_weekday + i))
+            week_dates.append(next_week_day.strftime("%d/%m"))
+        else:  # Dimecres, Dijous i Divendres són de la setmana actual
+            this_week_day = today - timedelta(days=current_weekday - i)
+            week_dates.append(this_week_day.strftime("%d/%m"))
+
+    # Combinem els dies de la setmana amb els dies numèrics
     days_with_dates = list(zip(days_of_week, week_dates))
 
     # Agafem les rutines programades
@@ -45,9 +54,10 @@ def workouts(request):
         'hours': hours,
         'schedule_data': schedule_data,
         'user': request.user,
-        # Data en format dd/mm
         'today': today.strftime("%d/%m"),  
     })
+
+
 
 # Vista per seleccionar la subscripcio
 @login_required
@@ -72,7 +82,7 @@ def select_subscription(request):
             request.user.subscription = selected_subscription
             request.user.save()
             messages.success(request, f"Subscripció '{selected_subscription.get_name_display()}' assignada correctament!")
-            return redirect('home') 
+            return redirect('gym_workouts:home') 
         else:
             print(form.errors) 
             
@@ -93,7 +103,7 @@ def enroll_user(request):
 
             # Verifiquem que l'usuari tingui subscripció
             if not request.user.subscription:
-                messages.error(request, "Has de tenir una subscripció per inscriure't a rutines.")
+                messages.warning(request, "Has de tenir una subscripció per inscriure't a rutines.")
                 return redirect('gym_workouts:workouts')
 
             # Obtenim el màxim de rutines segons la subscripció de l'usuari
@@ -108,10 +118,10 @@ def enroll_user(request):
                 schedule.enrollments.add(request.user)
                 messages.success(request, "T'has inscrit a la rutina correctament!")
             else:
-                messages.error(request, 'Ja no et pots inscriure!.')
+                messages.warning(request, 'Ja no et pots inscriure!.')
         else:
             print(form.errors)  
-            messages.error(request, 'Hi ha hagut un error inesperat.')
+            messages.warning(request, 'Hi ha hagut un error inesperat.')
 
     return redirect('gym_workouts:workouts')
 

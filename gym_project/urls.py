@@ -19,8 +19,10 @@ from django.urls import path, include
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', include('gym_app.urls')),
+    path('', include('gym_app.urls', namespace='gym_app')),
     path('gym_trainer/', include('gym_trainer.urls'), name='gym_trainer'),
+    path('gym_admin/', include('gym_admin.urls'), name='gym_admin'),
+    path('gym_gerent/', include('gym_gerent.urls'), name='gym_gerent'),
     path('gym_workouts/', include('gym_workouts.urls'), name='gym_workouts'),
 
 ]

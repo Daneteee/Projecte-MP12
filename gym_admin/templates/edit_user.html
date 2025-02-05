@@ -1,0 +1,79 @@
+{% extends 'base.html' %} 
+
+{% block title %}Editar perfil - GymApp{% endblock %} 
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+            <div class="card shadow">
+                <div class="card-header">
+                    <i class="fas fa-user-edit"></i> Editar perfil de {{ user.get_full_name }}
+                </div>
+                <div class="card-body">
+                    <!-- Mostrar mensajes -->
+                    {% if messages %}
+                        <div class="mb-3">
+                            <ul class="list-unstyled">
+                                {% for message in messages %}
+                                    <li class="text-danger">{{ message }}</li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    {% endif %}
+                    
+                    <!-- Formulario para editar el perfil -->
+                    <form method="post">
+                        {% csrf_token %}
+                        <input type="hidden" name="user_id" value="{{ user.id }}">
+                        
+                        <div class="mb-3">
+                            <label for="username" class="form-label">Nombre de usuario</label>
+                            <input type="text" class="form-control" id="username" name="username" value="{{ form.username.value }}" required>
+                            {% if form.username.errors %}
+                                <div class="text-danger">{{ form.username.errors }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="first_name" class="form-label">Nombre</label>
+                            <input type="text" class="form-control" id="first_name" name="first_name" value="{{ form.first_name.value }}" required>
+                            {% if form.first_name.errors %}
+                                <div class="text-danger">{{ form.first_name.errors }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="last_name" class="form-label">Apellidos</label>
+                            <input type="text" class="form-control" id="last_name" name="last_name" value="{{ form.last_name.value }}" required>
+                            {% if form.last_name.errors %}
+                                <div class="text-danger">{{ form.last_name.errors }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="email" class="form-label">Email</label>
+                            <input type="email" class="form-control" id="email" name="email" value="{{ form.email.value }}" required>
+                            {% if form.email.errors %}
+                                <div class="text-danger">{{ form.email.errors }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="role" class="form-label">Rol</label>
+                            <select class="form-select" id="role" name="role" required>
+                                <option value="trainer" {% if form.role.value == 'trainer' %}selected{% endif %}>Entrenador</option>
+                                <option value="user" {% if form.role.value == 'user' %}selected{% endif %}>Usuario</option>
+                                <option value="admin" {% if form.role.value == 'admin' %}selected{% endif %}>Admin</option>
+                                <option value="gerent" {% if form.role.value == 'gerent' %}selected{% endif %}>Gerent</option>
+                            </select>
+                        </div>
+
+                        <button type="submit" class="btn purple-btn">Desar canvis</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

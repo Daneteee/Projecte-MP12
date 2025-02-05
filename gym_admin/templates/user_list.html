@@ -1,0 +1,87 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2>Llistat d'usuaris</h2>
+
+    <a href="{% url 'gym_app:register' %}" class="btn purple-btn">
+        <i class="fas fa-plus"></i> Afegir usuari
+    </a><br><br>
+
+    {% if users %}
+        <div class="table-responsive">
+            <table class="table table-bordered text-center">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Usuari</th>
+                        <th>Nom</th>
+                        <th>Email</th>
+                        <th>Rol</th>
+                        <th>Accions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for user in users %}
+                        <tr>
+                            <td>{{ user.id }}</td>
+                            <td>{{ user.username }}</td>
+                            <td>{{ user.get_full_name }}</td>
+                            <td>{{ user.email }}</td>
+                            <td>{{ user.role }}</td>
+                            <td>
+                                <!-- Botons d'editar i eliminar -->
+                                {% if request.user.role == 'admin' %}
+                                    <a href="{% url 'gym_admin:edit_user' user.id %}" class="btn purple-btn">Editar</a>
+                                    <button type="button" 
+                                            class="btn btn-link text-danger p-0" 
+                                            onclick="confirmDelete('{{ user.id }}', '{{ user.username }}')"
+                                            style="font-size: 1.5rem;">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <p>No hay usuarios disponibles.</p>
+    {% endif %}
+</div>
+
+<!-- Modal per confirmar l'eliminació d'un usuari -->
+<div class="modal fade" id="confirmDeleteModal" tabindex="-1" aria-labelledby="confirmDeleteLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="confirmDeleteLabel">Confirmar Eliminación</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+            </div>
+            <div class="modal-body">
+                ¿Estás seguro de que quieres eliminar al usuario <strong id="userName"></strong>?
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <form method="POST" id="deleteForm" action="{% url 'gym_admin:delete_user' %}">
+                    {% csrf_token %}
+                    <input type="hidden" name="user_id" id="userIdInput">
+                    <button type="submit" class="btn btn-danger">Eliminar</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Funció pel modal d'eliminació
+    function confirmDelete(userId, userName) {
+        document.getElementById('userName').textContent = userName;
+        document.getElementById('userIdInput').value = userId;
+
+        const modal = new bootstrap.Modal(document.getElementById('confirmDeleteModal'));
+        modal.show();
+    }
+</script>
+{% endblock %}

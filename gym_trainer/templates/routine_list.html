@@ -1,0 +1,82 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2>Llistat de Rutines</h2>
+
+    {% if routines %}
+        <div class="table-responsive">
+            <table class="table table-bordered text-center">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Nom de la Rutina</th>
+                        <th>Duració (min)</th>
+                        <th>Recomanacions</th>
+                        <th>Accions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for routine in routines %}
+                        <tr>
+                            <td>{{ routine.id }}</td>
+                            <td>{{ routine.name }}</td>
+                            <td>{{ routine.duration }} min</td>
+                            <td>{{ routine.recommendations }}</td>
+                            <td>
+                                <!-- Botons d'editar i eliminar -->
+                                <a href="{% url 'gym_trainer:edit_routine' routine.id %}" class="btn purple-btn">Editar</a>
+
+                                <button type="button" 
+                                        class="btn btn-danger" 
+                                        onclick="confirmDelete('{{ routine.id }}', '{{ routine.name }}')">
+                                    <i class="fas fa-trash"></i> Eliminar
+                                </button>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <p>No hi ha rutines disponibles.</p>
+    {% endif %}
+</div>
+
+<!-- Modal per confirmar l'eliminació d'una rutina -->
+<div class="modal fade" id="confirmDeleteModal" tabindex="-1" aria-labelledby="confirmDeleteLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="confirmDeleteLabel">Confirmar Eliminació</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tancar"></button>
+            </div>
+            <div class="modal-body">
+                Estàs segur que vols eliminar la rutina <strong id="routineName"></strong>?
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <form method="POST" id="deleteForm">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger">Eliminar</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function confirmDelete(routineId, routineName) {
+        document.getElementById('routineName').textContent = routineName;
+        
+        // Construye la URL correcta con el routineId
+        const deleteForm = document.getElementById('deleteForm');
+        deleteForm.action = `/gym_trainer/routines/${routineId}/delete/`;
+
+        const modal = new bootstrap.Modal(document.getElementById('confirmDeleteModal'));
+        modal.show();
+    }
+</script>
+
+
+{% endblock %}

@@ -1,0 +1,78 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2>Llistat d'usuaris</h2>
+
+    <!-- Cercador -->
+    <form method="GET" class="mb-3">
+        <input type="text" name="search" value="{{ search_query }}" placeholder="Cerca..." class="form-control" />
+        <button type="submit" class="btn purple-btn mt-2">Cercar</button>
+    </form>
+
+    {% if page_obj %}
+        <div class="table-responsive">
+            <table class="table table-bordered text-center">
+                <thead>
+                    <tr>
+                        <!-- Botons d'ordenació -->
+                        <th><a href="?sort=id&order={% if sort_by == 'id' and order == 'asc' %}desc{% else %}asc{% endif %}&search={{ search_query }}&page={{ page_obj.number }}" class="btn purple-btn">ID</a></th>
+                        <th><a href="?sort=username&order={% if sort_by == 'username' and order == 'asc' %}desc{% else %}asc{% endif %}&search={{ search_query }}&page={{ page_obj.number }}" class="btn purple-btn">Usuari</a></th>
+                        <th><a href="?sort=first_name&order={% if sort_by == 'first_name' and order == 'asc' %}desc{% else %}asc{% endif %}&search={{ search_query }}&page={{ page_obj.number }}" class="btn purple-btn">Nom</a></th>
+                        <th><a href="?sort=email&order={% if sort_by == 'email' and order == 'asc' %}desc{% else %}asc{% endif %}&search={{ search_query }}&page={{ page_obj.number }}" class="btn purple-btn">Email</a></th>
+                        <th><a href="?sort=role&order={% if sort_by == 'role' and order == 'asc' %}desc{% else %}asc{% endif %}&search={{ search_query }}&page={{ page_obj.number }}" class="btn purple-btn">Rol</a></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for user in page_obj %}
+                        <tr>
+                            <td>{{ user.id }}</td>
+                            <td>{{ user.username }}</td>
+                            <td>{{ user.get_full_name }}</td>
+                            <td>{{ user.email }}</td>
+                            <td>{{ user.role }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Paginación -->
+        <nav aria-label="Page navigation">
+            <ul class="pagination justify-content-center">
+                {% if page_obj.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link purple-btn" href="?page=1&sort={{ sort_by }}&order={{ order }}&search={{ search_query }}" aria-label="Primera">
+                            <span aria-hidden="true">&laquo;</span>
+                        </a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link purple-btn" href="?page={{ page_obj.previous_page_number }}&sort={{ sort_by }}&order={{ order }}&search={{ search_query }}" aria-label="Anterior">
+                            <span aria-hidden="true">Anterior</span>
+                        </a>
+                    </li>
+                {% endif %}
+
+                <li class="page-item disabled">
+                    <span class="page-link">Pàgina {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}</span>
+                </li>
+
+                {% if page_obj.has_next %}
+                    <li class="page-item">
+                        <a class="page-link purple-btn" href="?page={{ page_obj.next_page_number }}&sort={{ sort_by }}&order={{ order }}&search={{ search_query }}" aria-label="Siguiente">
+                            <span aria-hidden="true">Següent</span>
+                        </a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link purple-btn" href="?page={{ page_obj.paginator.num_pages }}&sort={{ sort_by }}&order={{ order }}&search={{ search_query }}" aria-label="Última">
+                            <span aria-hidden="true">&raquo;</span>
+                        </a>
+                    </li>
+                {% endif %}
+            </ul>
+        </nav>
+    {% else %}
+        <p>No hi han usuaris disponibles.</p>
+    {% endif %}
+</div>
+{% endblock %}

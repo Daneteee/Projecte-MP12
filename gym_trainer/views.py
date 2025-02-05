@@ -9,6 +9,7 @@ from django.contrib import messages
 def is_trainer(user):
     return user.role == 'trainer'
 
+
 # En cas que no sigui trainer redirigim a la home
 def trainer_required(view_func):
     return user_passes_test(
@@ -25,13 +26,50 @@ def create_routine(request):
         form = RoutineForm(request.POST)
         if form.is_valid():
             routine = form.save(commit=False)
+            routine.duration *= 60
             routine.trainer = request.user
             routine.save()
             messages.success(request, 'Rutina creada amb èxit!')
-            return redirect('home')
+            return redirect('gym_trainer:home')
     else:
         form = RoutineForm()
     return render(request, 'create_routine.html', {'form': form, 'active_tab': 'create_routine'})
+
+
+# Bista per editar la rutina
+@login_required
+@trainer_required
+def edit_routine(request, routine_id):
+    # Si trobem la rutina l'editem amb el formulari RoutineForm
+    routine = get_object_or_404(Routine, id=routine_id)
+    if request.method == 'POST':
+        form = RoutineForm(request.POST, instance=routine)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Rutina actualitzada amb èxit.')
+            return redirect('gym_trainer:assign_schedule')
+    else:
+        form = RoutineForm(instance=routine)
+    return render(request, 'edit_routine.html', {'form': form, 'routine': routine})
+
+
+# Vista per eliminar una rutina 
+@login_required
+@trainer_required
+def delete_routine(request, routine_id):
+    routine = get_object_or_404(Routine, id=routine_id)
+    if request.method == 'POST':
+        routine.delete()
+        messages.success(request, 'Rutina eliminada con éxito.')
+        return redirect('gym_trainer:assign_schedule')
+    return redirect('home')
+
+# Obtenim totes les rutines i les llistem
+@login_required
+@trainer_required
+def routine_list(request):
+    routines = Routine.objects.all()  
+    return render(request, 'routine_list.html', {'routines': routines})
 
 
 # Vista on passem les dades per crear el calendari amb les rutines
@@ -74,22 +112,6 @@ def assign_schedule(request):
         'schedule_data': schedule_data,
     })
 
-# Bista per editar la rutina
-@login_required
-@trainer_required
-def edit_routine(request, routine_id):
-    # Si trobem la rutina l'editem amb el formulari RoutineForm
-    routine = get_object_or_404(Routine, id=routine_id)
-    if request.method == 'POST':
-        form = RoutineForm(request.POST, instance=routine)
-        if form.is_valid():
-            form.save()
-            messages.success(request, 'Rutina actualitzada amb èxit.')
-            return redirect('gym_trainer:assign_schedule')
-    else:
-        form = RoutineForm(instance=routine)
-    return render(request, 'edit_routine.html', {'form': form, 'routine': routine})
-
 # Vista per eliminar l'assignació duna rutina a l'horari
 @login_required
 @trainer_required
@@ -102,15 +124,3 @@ def delete_schedule(request):
 
         messages.success(request, 'La rutina ha sido eliminada del horario.')
     return redirect('gym_trainer:assign_schedule')
-
-
-# Vista per eliminar una rutina 
-@login_required
-@trainer_required
-def delete_routine(request, routine_id):
-    routine = get_object_or_404(Routine, id=routine_id)
-    if request.method == 'POST':
-        routine.delete()
-        messages.success(request, 'Rutina eliminada con éxito.')
-        return redirect('gym_trainer:assign_schedule')
-    return redirect('home')

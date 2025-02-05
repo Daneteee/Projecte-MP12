@@ -14,6 +14,13 @@ def home(request):
     
     elif request.user.role == 'user':
         return redirect('gym_workouts:workouts')
+    
+    elif request.user.role == 'admin':
+        return redirect('gym_admin:user_list')
+    
+    elif request.user.role == 'gerent':
+        return redirect('gym_gerent:user_list')
+    
 
     return render(request, 'home.html', context)
 
@@ -25,12 +32,12 @@ def register(request):
         if form.is_valid():
             try:
                 form.save()
-                messages.success(request, "Registre exitós. Ja pots iniciar sessió.")
+                messages.success(request, "Registre exitós.")
                 return redirect('login')
             except Exception as e:
                 print(f"Hi ha hagut un error: {str(e)}")
         else:
-            messages.error(request, "Hi han errors al formulari.")
+            messages.warning(request, "Hi han errors al formulari.")
     else:
         form = UserRegistrationForm()
     
@@ -49,9 +56,9 @@ def user_login(request):
             if user is not None:
                 login(request, user)
                 messages.success(request, 'Has iniciat sessió correctament!')
-                return redirect('home')
+                return redirect('gym_app:home')
             else:
-                messages.error(request, 'ERROR: Credencials incorrectes.')
+                messages.warning(request, 'ERROR: Credencials incorrectes.')
     else:
         form = UserLoginForm()
     return render(request, 'login.html', {'form': form})
@@ -61,7 +68,7 @@ def user_login(request):
 @login_required
 def logout_view(request):
     logout(request)
-    return redirect('home')
+    return redirect('gym_app:home')
 
 
 # Vista per editar el perfil
@@ -72,7 +79,7 @@ def profile_edit(request):
         if form.is_valid():
             form.save()
             messages.success(request, 'El perfil s\'ha actualitzat correctament.')
-            return redirect('home')
+            return redirect('gym_app:home')
     else:
         form = UserUpdateForm(instance=request.user)
         
